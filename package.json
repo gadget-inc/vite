@@ -1,6 +1,7 @@
 {
   "name": "@vitejs/vite-monorepo",
   "private": true,
+  "version": "4.2.2",
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
   },
