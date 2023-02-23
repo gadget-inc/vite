@@ -1,3 +1,8 @@
+## <small>4.2.1 (2023-02-23)</small>
+
+
+
+
 ## 4.2.0-alpha.0 (2023-02-23)
 
 * fix: __DEFINES__ is not defined is env (#4694) ([ff50c22](https://github.com/vitejs/vite/commit/ff50c22)), closes [#4694](https://github.com/vitejs/vite/issues/4694)
