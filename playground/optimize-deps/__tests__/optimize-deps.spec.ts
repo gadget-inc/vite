@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+  browser,
   browserErrors,
   browserLogs,
   expectWithRetry,
@@ -9,6 +10,7 @@ import {
   page,
   readDepOptimizationMetadata,
   serverLogs,
+  viteServer,
   viteTestUrl,
 } from '~utils'
 
@@ -358,3 +360,32 @@ test('dependency with external sub-dependency', async () => {
     page.textContent('.dep-cjs-with-external-dep'),
   ).toBe('ok')
 })
+
+test.runIf(isServe)(
+  'the metadata written by the dep optimizer should match the metadata in memory',
+  async () => {
+    await viteServer.waitForRequestsIdle()
+    const metadata = readDepOptimizationMetadata()
+
+    let page = await browser.newPage()
+    const response = page.waitForResponse(/\/cjs\.js/)
+    await page.goto(viteTestUrl)
+
+    const content = await (await response).text()
+    const reactBrowserHash = content.match(
+      /from "\/node_modules\/\.vite\/deps\/react\.js\?v=([^"&]*)"/,
+    )?.[1]
+    expect(reactBrowserHash).toBe(metadata.browserHash)
+
+    await viteServer.restart()
+
+    page = await browser.newPage()
+    const responseAfterRestart = page.waitForResponse(/cjs\.js/)
+    await page.goto(viteTestUrl)
+    const contentAfterRestart = await (await responseAfterRestart).text()
+    const reactBrowserHashAfterRestart = contentAfterRestart.match(
+      /from "\/node_modules\/\.vite\/deps\/react\.js\?v=([^"&]*)"/,
+    )?.[1]
+    expect(reactBrowserHashAfterRestart).toBe(metadata.browserHash)
+  },
+)
