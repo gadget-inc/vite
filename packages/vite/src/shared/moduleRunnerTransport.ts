@@ -285,6 +285,13 @@ export const createWebSocketModuleRunnerTransport = (options: {
             },
             { once: true },
           )
+          socket.addEventListener('error', async (event) => {
+            onMessage({
+              type: 'custom',
+              event: 'vite:ws:error',
+              data: { event, wsOpened: isOpened },
+            })
+          })
           socket.addEventListener('close', async () => {
             if (!isOpened) {
               reject(new Error('WebSocket closed without opened.'))
