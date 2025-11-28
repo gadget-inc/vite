@@ -167,7 +167,12 @@ const hmrClient = new HMRClient(
     return await importPromise
   },
 )
-transport.connect!(createHMRHandler(handleMessage))
+
+void (async () => {
+  await transport.connect!(createHMRHandler(handleMessage))
+})().catch((error) => {
+  console.error('[vite] failed to connect to connect hmr transport', error)
+})
 
 async function handleMessage(payload: HotPayload) {
   switch (payload.type) {

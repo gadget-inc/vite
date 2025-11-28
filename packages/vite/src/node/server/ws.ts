@@ -14,7 +14,7 @@ import type { WebSocket as WebSocketTypes } from '#dep-types/ws'
 import type { ErrorPayload, HotPayload } from '#types/hmrPayload'
 import type { InferCustomEventPayload } from '#types/customEvent'
 import type { ResolvedConfig } from '..'
-import { isObject } from '../utils'
+import { createDebugger, isObject } from '../utils'
 import type { NormalizedHotChannel, NormalizedHotChannelClient } from './hmr'
 import { normalizeHotChannel } from './hmr'
 import type { HttpServer } from '.'
@@ -88,6 +88,8 @@ function noop() {
   // noop
 }
 
+const debugWs: ((...args: any[]) => any) | undefined = createDebugger('vite:ws')
+
 // we only allow websockets to be connected if it has a valid token
 // this is to prevent untrusted origins to connect to the server
 // for example, Cross-site WebSocket hijacking
@@ -106,6 +108,12 @@ function hasValidToken(config: ResolvedConfig, url: URL) {
       Buffer.from(token),
       Buffer.from(config.webSocketToken),
     )
+
+    if (!isValidToken) {
+      debugWs?.(
+        `[invalid token] expected ${config.webSocketToken} but got ${token}`,
+      )
+    }
     return isValidToken
   } catch {} // an error is thrown when the length is incorrect
   return false
